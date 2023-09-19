@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::path::{Path};
 use std::process::Command;
-use crate::lib::path_to_string;
+use crate::utils::path_to_string;
 
 pub struct Container {
     name: Option<String>,

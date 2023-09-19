@@ -1,5 +1,4 @@
 mod instance;
-mod lib;
 mod utils;
 
 use crate::instance::instance_config::BuildConfig;
