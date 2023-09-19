@@ -7,6 +7,5 @@ rustflags = ["-C", "warnings=off"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rs-docker = "0.0.60"
 lazy_static = "1.4.0"
 

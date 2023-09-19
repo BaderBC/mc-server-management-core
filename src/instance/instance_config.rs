@@ -1,8 +1,7 @@
-use std::fmt::{Display, Formatter, write};
-use std::net::Shutdown::Write;
+use std::fmt::{Display, Formatter};
 
 pub enum Engine {
-    FORGE,
+    FORGE(String),
     VANILLA,
 }
 
@@ -10,7 +9,7 @@ pub struct InstanceConfig {
     pub port: u16,
     pub name: String,
     pub engine: Engine,
-    pub engine_version: String,
+    pub game_version: String,
 }
 
 impl InstanceConfig {
@@ -19,7 +18,7 @@ impl InstanceConfig {
             port: 25565,
             name,
             engine: Engine::VANILLA,
-            engine_version: "1.12".to_string(),
+            game_version: "1.12".to_string(),
         }
     }
 }
@@ -27,7 +26,7 @@ impl InstanceConfig {
 impl Display for Engine {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Engine::FORGE => write!(f, "FORGE"),
+            Engine::FORGE(verison) => write!(f, "FORGE version: {}", verison),
             Engine::VANILLA => write!(f, "VANILLA"),
         }
     }
@@ -35,6 +34,6 @@ impl Display for Engine {
 
 impl Display for InstanceConfig {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Instance name: {},\nPort: {},\nEngine: {},\nVersion: {}", self.name, self.port, self.engine, self.engine_version)
+        write!(f, "Instance name: {},\nPort: {},\nEngine: {},\nVersion: {}", self.name, self.port, self.engine, self.game_version)
     }
 }
