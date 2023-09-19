@@ -1,8 +1,7 @@
-use std::fmt::format;
 use std::path::Path;
 
 use crate::{BuildConfig};
-use crate::lib::docker::Container;
+use crate::utils::docker::Container;
 use crate::utils::msma_var_dir;
 
 const IMAGE: &str = "itzg/minecraft-server";
