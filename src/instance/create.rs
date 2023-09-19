@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use crate::{BuildConfig};
+use crate::instance::instance_config::BuildConfig;
 use crate::utils::docker::Container;
 use crate::utils::msma_var_dir;
 
