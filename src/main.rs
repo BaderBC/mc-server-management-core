@@ -2,12 +2,13 @@ mod instance;
 mod lib;
 mod utils;
 
-use std::path::{PathBuf};
-use crate::instance::InstanceConfig;
-
+use crate::instance::instance_config::BuildConfig;
 
 fn main() {
-    let instance_config = InstanceConfig::default("test".to_string());
+    if cfg!(not(target_os = "linux")) {
+        panic!("Currently only supported system is linux");
+    }
+    let instance_config = BuildConfig::default("test".to_string());
     println!("{}", instance_config);
 
     instance::create(instance_config);

@@ -1,4 +1,4 @@
-use crate::instance::InstanceConfig;
+use crate::instance::instance_config::BuildConfig;
 
 pub fn get_config() -> InstanceInfo {
     
@@ -6,5 +6,5 @@ pub fn get_config() -> InstanceInfo {
 }
 
 pub struct InstanceInfo {
-    pub config: InstanceConfig,
+    pub config: BuildConfig,
 }

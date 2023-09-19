@@ -8,6 +8,7 @@ pub struct Container {
     image: String,
     exposed_ports: HashMap<u16, u16>,
     mount_points: HashMap<String, String>,
+    custom_options: HashMap<String, String>,
 }
 
 impl Container {
@@ -17,6 +18,7 @@ impl Container {
             image: image.to_string(),
             exposed_ports: Default::default(),
             mount_points: Default::default(),
+            custom_options: Default::default(),
         }
     }
 
@@ -38,6 +40,15 @@ impl Container {
         self.mount_points.insert(host_path, container_path);
         self
     }
+    
+    pub fn env(self, value: &str) -> Self {
+        self.custom_option("-e", value)
+    }
+    
+    pub fn custom_option(mut self, option: &str, value: &str) -> Self {
+        self.custom_options.insert(option.to_string(), value.to_string());
+        self
+    }
 
     pub fn create(self) {
         let mut command = Command::new("docker");
@@ -52,6 +63,10 @@ impl Container {
         for (host_path, container_path) in self.mount_points.into_iter() {
             command.args(["-v", &format!("{}:{}", host_path, container_path)]);
         }
+        for (option, value) in self.custom_options.into_iter() {
+            command.args([option, value]);
+        }
+        
         command.arg(self.image);
 
         const FAILED_TO_CREATE: &str = "Failed to create docker container";
