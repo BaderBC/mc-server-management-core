@@ -1,2 +1,2 @@
 [env]
-MSMA_PATH = "/var/lib/msma"
+MSMC_PATH = "/var/lib/msmc"

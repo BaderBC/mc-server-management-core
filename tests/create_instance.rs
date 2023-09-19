@@ -1,9 +1,9 @@
 use std::process::Command;
-use std::thread::sleep;
-use std::time::Duration;
 use uuid::Uuid;
-use mc_server_management_api::instance::create;
-use mc_server_management_api::instance::instance_config::{BuildConfig, Engine};
+
+use mc_server_management_core as msmc;
+use msmc::instance::create;
+use msmc::instance::instance_config::{BuildConfig, Engine};
 
 // TODO: replace this function with msma lib function:
 fn delete_container(name: String) {

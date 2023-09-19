@@ -2,7 +2,7 @@ use std::path::Path;
 
 use crate::instance::instance_config::BuildConfig;
 use crate::utils::docker::Container;
-use crate::utils::msma_var_dir;
+use crate::utils::msmc_var_dir;
 
 const IMAGE: &str = "itzg/minecraft-server";
 const MC_DEFAULT_PORT: u16 = 25565;
@@ -12,7 +12,7 @@ pub fn create(config: BuildConfig) {
     let seed = format!("SEED={}", config.seed.unwrap_or(String::new()));
     let modpack_url = format!("MODPACK={}", config.modpack_zip_url.unwrap_or(String::new()));
     
-    let mut host_path = msma_var_dir::init_and_get_instance_dir();
+    let mut host_path = msmc_var_dir::init_and_get_instance_dir();
     host_path.push(&config.name);
     
     Container::new(IMAGE)
