@@ -1,4 +1,4 @@
 # mc-server-manager-manager-core
-Api for Minecraft Server Instances Manager, written in rust, with forge support
+Minecraft Server Instances Manager Core, written in rust, with forge support and usage of docker containers
 
 (Still in early pre-alpha development)
