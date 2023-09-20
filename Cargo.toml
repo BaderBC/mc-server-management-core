@@ -6,8 +6,8 @@ rustflags = ["-C", "warnings=off"]
 
 [dependencies]
 lazy_static = "1.4.0"
-serde = "1.0.188"
-serde_json = "1.0.107"
+serde = {version = "1.0.188", features = ["derive"]}
+serde_json = { version = "1.0.107", features = [] }
 
 [dev-dependencies]
 uuid = {version = "1.4.1", features = ["v4", "fast-rng"]}
