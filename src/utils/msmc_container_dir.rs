@@ -5,7 +5,6 @@ use crate::utils::msmc_var_dir::INSTANCES_PATH;
 pub fn init(name: &str) {
     let mut path = INSTANCES_PATH.to_path_buf();
     path.push(name);
-    path.push("msmc");
 
     let dir_create = fs::create_dir_all(path);
 
@@ -21,6 +20,5 @@ pub fn init_and_get_container_dir(name: &str) -> PathBuf {
 
     let mut path = INSTANCES_PATH.to_path_buf();
     path.push(name);
-    path.push("msmc");
     path
 }

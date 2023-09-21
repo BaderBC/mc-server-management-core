@@ -14,10 +14,10 @@ macro_rules! unwrap_or_return_default {
     }
 }
 
-trait ReadConfigVec where for<'a> Self: Deserialize<'a> {
+pub trait ConfigTrait where for<'a> Self: Deserialize<'a> {
     const CONFIG_FILENAME: &'static str;
     fn read(container_name: &str) -> Vec<Self> {
-        let file_name = <Self as ReadConfigVec>::CONFIG_FILENAME.to_string();
+        let file_name = <Self as ConfigTrait>::CONFIG_FILENAME.to_string();
         let config = read_file(container_name, &file_name);
         let config = unwrap_or_return_default!(config);
 
@@ -25,18 +25,15 @@ trait ReadConfigVec where for<'a> Self: Deserialize<'a> {
     }
 }
 
-trait SaveAndModify {
+pub trait PlayerConfigTrait {
     #[allow(clippy::wrong_self_convention)]
-    fn is_modified(&self) -> bool;
-    fn container_name(&self) -> &'static str;
+    fn container_name(&self) -> String;
 
-    fn save<T>(self) -> std::io::Result<()> where T: ReadConfigVec, Self: Serialize + Sized {
-        if !self.is_modified() { return Ok(()); }
-
+    fn save<Config>(&self) -> std::io::Result<()> where Config: ConfigTrait, Self: Serialize + Sized {
         let container_name = self.container_name();
-        let json_config = serde_json::to_string(&self).unwrap();
+        let json_config = serde_json::to_string(self).unwrap();
 
-        write_file(&container_name, T::CONFIG_FILENAME, json_config);
+        write_file(&container_name, Config::CONFIG_FILENAME, json_config);
         Ok(())
     }
 }
@@ -103,20 +100,24 @@ pub struct BannedIps<'a> {
     container_name: &'a str,
 }
 
-impl<'a> ReadConfigVec for WhitelistConfig {
+impl<'a> ConfigTrait for WhitelistConfig {
     const CONFIG_FILENAME: &'static str = "whitelist.json";
 }
 
-impl<'a> ReadConfigVec for OpsConfig {
+impl<'a> ConfigTrait for OpsConfig {
     const CONFIG_FILENAME: &'static str = "ops.json";
 }
 
-impl<'a> ReadConfigVec for BannedPlayersConfig {
+impl<'a> ConfigTrait for BannedPlayersConfig {
     const CONFIG_FILENAME: &'static str = "banned-players.json";
 }
 
-impl<'a> ReadConfigVec for BannedIpsConfig {
+impl<'a> ConfigTrait for BannedIpsConfig {
     const CONFIG_FILENAME: &'static str = "banned-ips.json";
+}
+
+impl<'a> PlayerConfigTrait for Whitelist<'a> {
+    fn container_name(&self) -> String { self.container_name.to_string() }
 }
 
 impl<'a> Whitelist<'a> {
@@ -127,6 +128,20 @@ impl<'a> Whitelist<'a> {
             container_name,
         }
     }
+
+    pub fn remove_player(mut self, name: String) {
+        // TODO: find a way to implement e.g. some type of inheritance, because of DRY
+        let index = self
+            .config
+            .iter()
+            .position(|e| e.name == name);
+        let index = unwrap_or_return_default!(index);
+        self.config.remove(index);
+    }
+}
+
+impl<'a> PlayerConfigTrait for Ops<'a> {
+    fn container_name(&self) -> String { self.container_name.to_string() }
 }
 
 impl<'a> Ops<'a> {
@@ -137,6 +152,19 @@ impl<'a> Ops<'a> {
             container_name,
         }
     }
+    pub fn remove_player(mut self, name: String) {
+        // TODO: find a way to implement e.g. some type of inheritance, because of DRY
+        let index = self
+            .config
+            .iter()
+            .position(|e| e.name == name);
+        let index = unwrap_or_return_default!(index);
+        self.config.remove(index);
+    }
+}
+
+impl<'a> PlayerConfigTrait for BannedPlayers<'a> {
+    fn container_name(&self) -> String { self.container_name.to_string() }
 }
 
 impl<'a> BannedPlayers<'a> {
@@ -147,6 +175,19 @@ impl<'a> BannedPlayers<'a> {
             container_name,
         }
     }
+    pub fn remove_player(mut self, name: String) {
+        // TODO: find a way to implement e.g. some type of inheritance, because of DRY
+        let index = self
+            .config
+            .iter()
+            .position(|e| e.name == name);
+        let index = unwrap_or_return_default!(index);
+        self.config.remove(index);
+    }
+}
+
+impl<'a> PlayerConfigTrait for BannedIps<'a> {
+    fn container_name(&self) -> String { self.container_name.to_string() }
 }
 
 impl<'a> BannedIps<'a> {
@@ -156,6 +197,15 @@ impl<'a> BannedIps<'a> {
             is_modified: false,
             container_name,
         }
+    }
+    pub fn remove_player(mut self, ip: String) {
+        // TODO: find a way to implement e.g. some type of inheritance, because of DRY
+        let index = self
+            .config
+            .iter()
+            .position(|e| e.ip == ip);
+        let index = unwrap_or_return_default!(index);
+        self.config.remove(index);
     }
 }
 
@@ -185,7 +235,6 @@ fn write_file(container_name: &str, file_name: &str, content: String) -> Result<
 
 #[cfg(test)]
 mod test {
-    // TODO: add more tests
     #[test]
     fn macro_test() {
         let should_be_empty = _macro_test(None);
