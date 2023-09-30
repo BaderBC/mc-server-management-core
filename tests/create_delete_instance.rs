@@ -4,7 +4,6 @@ use uuid::Uuid;
 
 use mc_server_management_core as msmc;
 use mc_server_management_core::utils::msmc_container_dir::init_and_get_container_dir;
-use msmc::instance::create;
 use msmc::instance::instance_config::{BuildConfig, Engine};
 
 // TODO: replace this function with msmc lib function:
@@ -59,21 +58,21 @@ pub fn generate_uuid_name_build_config() -> (String, BuildConfig) {
 
 pub fn create_instance() -> String {
     let (name, config) = generate_uuid_name_build_config();
-    create(config);
+    config.create();
     name
 }
 
 #[test]
 fn vanilla_1_12() {
     let (name, config) = generate_uuid_name_build_config();
-    create(config);
+    config.create();
     delete_container(&name);
 }
 
 fn start_vanilla_1_12() {
     let (name, config) = generate_uuid_name_build_config();
 
-    create(config);
+    config.create();
     start_container(&name);
     stop_container(&name);
     delete_container(&name);
