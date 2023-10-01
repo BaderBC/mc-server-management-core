@@ -77,4 +77,17 @@ impl Container {
 
         assert!(exit_status.success(), "{}", FAILED_TO_CREATE);
     }
+    
+    pub fn remove(container_id_or_name: &str) {
+        let mut command = Command::new("docker");
+        command.args(["container", "container", "rm", container_id_or_name]);
+        
+        const FAILED_TO_REMOVE: &str = "Failed to delete docker container";
+        
+        let exit_status = command
+            .status()
+            .expect(FAILED_TO_REMOVE);
+        
+        assert!(exit_status.success(), "{}", FAILED_TO_REMOVE)
+    }
 }

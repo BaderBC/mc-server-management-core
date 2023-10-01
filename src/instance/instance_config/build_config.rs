@@ -8,7 +8,7 @@ const IMAGE: &str = "itzg/minecraft-server";
 const MC_DEFAULT_PORT: u16 = 25565;
 const MC_DATA_CONTAINER_DIR: &str = "/data";
 
-pub struct BuildConfig {
+pub struct InstanceConfig {
     pub port: u16,
     pub name: String,
     pub engine: Engine,
@@ -17,9 +17,9 @@ pub struct BuildConfig {
     pub seed: Option<String>,
 }
 
-impl BuildConfig {
-    pub fn default(name: String) -> BuildConfig {
-        BuildConfig {
+impl InstanceConfig {
+    pub fn new(name: String) -> InstanceConfig {
+        InstanceConfig {
             port: 25565,
             name,
             engine: Engine::VANILLA,
@@ -46,9 +46,13 @@ impl BuildConfig {
             .mount(host_path, Path::new(MC_DATA_CONTAINER_DIR))
             .create();
     }
+    
+    pub fn remove(name: &str) {
+        Container::remove(name);
+    }
 }
 
-impl Display for BuildConfig {
+impl Display for InstanceConfig {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "Instance name: {},\nPort: {},\nEngine: {},\nVersion: {}", self.name, self.port, self.engine, self.game_version)
     }

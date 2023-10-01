@@ -5,7 +5,7 @@ use lazy_static::lazy_static;
 lazy_static! {
     pub static ref INSTANCES_PATH: PathBuf = {
         let mut instances_path = PathBuf::new();
-        instances_path.push(env!("MSMC_PATH"));
+        instances_path.push("/var/lib/msmc");
         instances_path.push("minecraft_instances");
 
         instances_path

@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 use mc_server_management_core as msmc;
 use mc_server_management_core::utils::msmc_container_dir::init_and_get_container_dir;
-use msmc::instance::instance_config::{BuildConfig, Engine};
+use msmc::instance::instance_config::{InstanceConfig, Engine};
 
 // TODO: replace this function with msmc lib function:
 pub fn delete_container(name: &str) {
@@ -42,10 +42,10 @@ pub fn stop_container(name: &str) {
     assert!(status.success());
 }
 
-pub fn generate_uuid_name_build_config() -> (String, BuildConfig) {
+pub fn generate_uuid_name_build_config() -> (String, InstanceConfig) {
     let name = Uuid::new_v4().to_string();
 
-    let config = BuildConfig {
+    let config = InstanceConfig {
         port: 2136,
         name: name.clone(),
         engine: Engine::VANILLA,
