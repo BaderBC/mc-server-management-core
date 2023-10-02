@@ -13,7 +13,7 @@ pub struct ContainerBuilder {
 }
 
 impl ContainerBuilder {
-    pub fn new<T: ToString>(image: T) -> ContainerBuilder {
+    pub fn new<T: ToString>(image: T) -> Self {
         ContainerBuilder {
             name: None,
             image: image.to_string(),
@@ -23,8 +23,8 @@ impl ContainerBuilder {
         }
     }
 
-    pub fn name(mut self, name: String) -> Self {
-        self.name = Some(name);
+    pub fn name(mut self, name: &str) -> Self {
+        self.name = Some(name.to_string());
         self
     }
 
@@ -83,18 +83,5 @@ impl ContainerBuilder {
             .unwrap_or("Failed to read container id");
         
         Container::get(container_id)
-    }
-    
-    pub fn remove(container_id_or_name: &str) {
-        let mut command = Command::new("docker");
-        command.args(["container", "container", "rm", container_id_or_name]);
-        
-        const FAILED_TO_REMOVE: &str = "Failed to delete docker container";
-        
-        let exit_status = command
-            .status()
-            .expect(FAILED_TO_REMOVE);
-        
-        assert!(exit_status.success(), "{}", FAILED_TO_REMOVE)
     }
 }

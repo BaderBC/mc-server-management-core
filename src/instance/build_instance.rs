@@ -1,14 +1,14 @@
 use std::fmt::{Display, Formatter};
 use std::path::Path;
 use crate::instance::instance_config::Engine;
-use crate::utils::docker::ContainerBuilder;
+use crate::utils::docker::{ContainerBuilder, Container};
 use crate::utils::msmc_var_dir;
 
 const IMAGE: &str = "itzg/minecraft-server";
 const MC_DEFAULT_PORT: u16 = 25565;
 const MC_DATA_CONTAINER_DIR: &str = "/data";
 
-pub struct InstanceConfig {
+pub struct InstanceBuilder {
     pub port: u16,
     pub name: String,
     pub engine: Engine,
@@ -17,9 +17,9 @@ pub struct InstanceConfig {
     pub seed: Option<String>,
 }
 
-impl InstanceConfig {
-    pub fn new(name: String) -> InstanceConfig {
-        InstanceConfig {
+impl InstanceBuilder {
+    pub fn new(name: String) -> Self {
+        Self {
             port: 25565,
             name,
             engine: Engine::VANILLA,
@@ -41,19 +41,11 @@ impl InstanceConfig {
             .env(&format!("VERSION={}", self.game_version))
             .env(&seed)
             .env(&modpack_url)
-            .name(self.name)
+            .name(&self.name)
             .port_mapping(self.port, MC_DEFAULT_PORT)
             .mount(host_path, Path::new(MC_DATA_CONTAINER_DIR))
             .create();
     }
-    
-    pub fn remove(name: &str) {
-        ContainerBuilder::remove(name);
-    }
 }
 
-impl Display for InstanceConfig {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Instance name: {},\nPort: {},\nEngine: {},\nVersion: {}", self.name, self.port, self.engine, self.game_version)
-    }
-}
+
