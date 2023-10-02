@@ -1,5 +1,5 @@
 mod get_info;
 pub mod instance_config;
-mod build_instance;
+mod instance;
 
-pub use build_instance::InstanceBuilder;
+pub use instance::{InstanceBuilder, Instance};

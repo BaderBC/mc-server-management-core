@@ -29,7 +29,7 @@ impl InstanceBuilder {
         }
     }
 
-    pub fn create(self) {
+    pub fn create(self) -> Instance {
         let seed = format!("SEED={}", self.seed.unwrap_or(String::new()));
         let modpack_url = format!("MODPACK={}", self.modpack_zip_url.unwrap_or(String::new()));
 
@@ -45,7 +45,30 @@ impl InstanceBuilder {
             .port_mapping(self.port, MC_DEFAULT_PORT)
             .mount(host_path, Path::new(MC_DATA_CONTAINER_DIR))
             .create();
+        
+        Instance::get(&self.name)
     }
 }
 
+pub struct Instance {
+    container: Container,
+    name: String,
+}
 
+impl Instance {
+    pub fn get(name: &str) -> Self {
+        Self {
+            container: Container::get(name),
+            name: name.to_string()
+        }
+    }
+
+    pub fn delete(self) {
+        self.container.remove();
+        // TODO: delete data_dir after deleting container
+    }
+
+    pub fn run(self) {
+        self.container.start();
+    }
+}
