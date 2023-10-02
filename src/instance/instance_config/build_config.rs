@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter};
 use std::path::Path;
 use crate::instance::instance_config::Engine;
-use crate::utils::docker::Container;
+use crate::utils::docker::ContainerBuilder;
 use crate::utils::msmc_var_dir;
 
 const IMAGE: &str = "itzg/minecraft-server";
@@ -36,7 +36,7 @@ impl InstanceConfig {
         let mut host_path = msmc_var_dir::init_and_get_instance_dir();
         host_path.push(&self.name);
 
-        Container::new(IMAGE)
+        ContainerBuilder::new(IMAGE)
             .env("EULA=TRUE")
             .env(&format!("VERSION={}", self.game_version))
             .env(&seed)
@@ -48,7 +48,7 @@ impl InstanceConfig {
     }
     
     pub fn remove(name: &str) {
-        Container::remove(name);
+        ContainerBuilder::remove(name);
     }
 }
 

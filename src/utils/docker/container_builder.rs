@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 use std::path::{Path};
 use std::process::Command;
+use crate::utils::docker::container::Container;
 use crate::utils::path_to_string;
 
-pub struct Container {
+pub struct ContainerBuilder {
     name: Option<String>,
     image: String,
     exposed_ports: HashMap<u16, u16>,
@@ -11,9 +12,9 @@ pub struct Container {
     custom_options: HashMap<String, String>,
 }
 
-impl Container {
-    pub fn new<T: ToString>(image: T) -> Container {
-        Container {
+impl ContainerBuilder {
+    pub fn new<T: ToString>(image: T) -> ContainerBuilder {
+        ContainerBuilder {
             name: None,
             image: image.to_string(),
             exposed_ports: Default::default(),
@@ -50,7 +51,7 @@ impl Container {
         self
     }
 
-    pub fn create(self) {
+    pub fn create(self) -> Container {
         let mut command = Command::new("docker");
         command.args(["container", "create"]);
 
@@ -71,11 +72,17 @@ impl Container {
 
         const FAILED_TO_CREATE: &str = "Failed to create docker container";
 
-        let exit_status = command
-            .status()
+        let command_output = command
+            .output()
             .expect(FAILED_TO_CREATE);
 
-        assert!(exit_status.success(), "{}", FAILED_TO_CREATE);
+        assert!(command_output.status.success(), "{}", FAILED_TO_CREATE);
+        
+        let cmd_output_utf8 = command_output.stdout;
+        let container_id = std::str::from_utf8(&cmd_output_utf8)
+            .unwrap_or("Failed to read container id");
+        
+        Container::get(container_id)
     }
     
     pub fn remove(container_id_or_name: &str) {
