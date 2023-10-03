@@ -71,4 +71,8 @@ impl Instance {
     pub fn run(self) {
         self.container.start();
     }
+    
+    pub fn stop(self) {
+        self.container.stop();
+    }
 }
