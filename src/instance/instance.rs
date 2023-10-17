@@ -30,7 +30,7 @@ impl InstanceBuilder {
         }
     }
 
-    pub fn create(self) -> Instance {
+    pub fn create(self) -> anyhow::Result<Instance> {
         let seed = format!("SEED={}", self.seed.unwrap_or(String::new()));
         let modpack_url = format!("MODPACK={}", self.modpack_zip_url.unwrap_or(String::new()));
 
@@ -46,7 +46,7 @@ impl InstanceBuilder {
             .port_mapping(self.port, MC_DEFAULT_PORT)
             .mount(host_path, Path::new(MC_DATA_CONTAINER_DIR))
             .create();
-        
+
         Instance::get(&self.name)
     }
 }
@@ -63,13 +63,13 @@ pub struct InstanceInfo {
 }
 
 impl Instance {
-    pub fn get(name: &str) -> Self {
-        Self {
-            container: Container::get(name),
-            name: name.to_string()
-        }
+    pub fn get(name: &str) -> anyhow::Result<Self> {
+        Ok(Self {
+            container: Container::get(name)?,
+            name: name.to_string(),
+        })
     }
-    
+
     pub fn get_info(self) -> InstanceInfo {
         // TODO: return way more information about instance
         InstanceInfo {
@@ -85,7 +85,7 @@ impl Instance {
     pub fn run(self) {
         self.container.start();
     }
-    
+
     pub fn stop(self) {
         self.container.stop();
     }

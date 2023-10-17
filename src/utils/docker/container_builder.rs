@@ -51,7 +51,7 @@ impl ContainerBuilder {
         self
     }
 
-    pub fn create(self) -> Container {
+    pub fn create(self) -> anyhow::Result<Container> {
         let mut command = Command::new("docker");
         command.args(["container", "create"]);
 
@@ -70,13 +70,9 @@ impl ContainerBuilder {
         
         command.arg(self.image);
 
-        const FAILED_TO_CREATE: &str = "Failed to create docker container";
 
         let command_output = command
-            .output()
-            .expect(FAILED_TO_CREATE);
-
-        assert!(command_output.status.success(), "{}", FAILED_TO_CREATE);
+            .output()?;
         
         let cmd_output_utf8 = command_output.stdout;
         let container_id = std::str::from_utf8(&cmd_output_utf8)
