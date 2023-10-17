@@ -1,5 +1,6 @@
 use std::fmt::{Display, Formatter};
 use std::path::Path;
+use serde::{Deserialize, Serialize};
 use crate::instance::instance_config::Engine;
 use crate::utils::docker::{ContainerBuilder, Container};
 use crate::utils::msmc_var_dir;
@@ -55,11 +56,24 @@ pub struct Instance {
     name: String,
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct InstanceInfo {
+    name: String,
+    // TODO: more fields
+}
+
 impl Instance {
     pub fn get(name: &str) -> Self {
         Self {
             container: Container::get(name),
             name: name.to_string()
+        }
+    }
+    
+    pub fn get_info(self) -> InstanceInfo {
+        // TODO: return way more information about instance
+        InstanceInfo {
+            name: self.name
         }
     }
 
