@@ -78,6 +78,6 @@ impl ContainerBuilder {
         let container_id = std::str::from_utf8(&cmd_output_utf8)
             .map_err(|_| anyhow::Error::msg("Failed to read container id"))?;
         
-        Container::get(container_id)
+        Container::get(container_id.trim())
     }
 }

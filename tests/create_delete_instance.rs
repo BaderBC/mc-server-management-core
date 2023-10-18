@@ -57,24 +57,26 @@ pub fn generate_uuid_name_build_config() -> (String, InstanceBuilder) {
     (name, config)
 }
 
-pub fn create_instance() -> String {
+pub fn create_instance() -> anyhow::Result<String> {
     let (name, config) = generate_uuid_name_build_config();
-    config.create();
-    name
+    config.create()?;
+    Ok(name)
 }
 
 #[test]
-fn vanilla_1_12() {
+fn vanilla_1_12() -> anyhow::Result<()> {
     let (name, config) = generate_uuid_name_build_config();
-    config.create();
+    config.create()?;
     delete_container(&name);
+    Ok(())
 }
 
-fn start_vanilla_1_12() {
+fn start_vanilla_1_12() -> anyhow::Result<()> {
     let (name, config) = generate_uuid_name_build_config();
 
-    config.create();
+    config.create()?;
     start_container(&name);
     stop_container(&name);
     delete_container(&name);
+    Ok(())
 }

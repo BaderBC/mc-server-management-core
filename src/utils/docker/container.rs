@@ -13,7 +13,7 @@ impl Container {
 
         let container_id = container_info["Id"]
             .as_str()
-            .ok_or(anyhow::Error::msg("Failed to read docker container ID"))?;
+            .ok_or(anyhow::Error::msg("No \"Id\" field on docker inspect result"))?;
 
         Ok(
             Self { id: container_id.to_string() }
@@ -78,7 +78,7 @@ impl Container {
         let mut inspect_output = Command::new("docker")
             .args(["inspect", identifier])
             .output()?;
-
+        
         if !inspect_output.status.success() {
             return Err(anyhow::Error::msg(INSPECT_ERROR_MSG));
         }
@@ -89,10 +89,13 @@ impl Container {
         };
         let inspect_data_str = inspect_data_str?;
 
-        let json_res = match serde_json::from_str(inspect_data_str) {
+        let json_res = match serde_json::from_str::<Value>(inspect_data_str) {
             Ok(v) => Ok(v),
             Err(_) => Err(anyhow::Error::msg("Failed to convert docker inspect output to Object (serde_json::Value)"))
-        };
-        json_res
+        }?;
+        
+        Ok(
+            json_res[0].to_owned()
+        )
     }
 }

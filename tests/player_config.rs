@@ -10,8 +10,8 @@ use msmc::instance::instance_config::players_config::{
 };
 
 #[test]
-fn remove_non_existing_player() {
-    let instance_name = create_instance();
+fn remove_non_existing_player() -> anyhow::Result<()> {
+    let instance_name = create_instance()?;
     start_container(&instance_name);
 
     // TODO: wait till instance is fully initialize (we should use msmc lib for this)
@@ -22,12 +22,13 @@ fn remove_non_existing_player() {
 
     stop_container(&instance_name);
     delete_container(&instance_name);
+    Ok(())
 }
 
 //#[test]
 #[allow(dead_code)]
-fn read_add_remove_whitelist_on_started_container() {
-    let instance_name = create_instance();
+fn read_add_remove_whitelist_on_started_container() -> anyhow::Result<()> {
+    let instance_name = create_instance()?;
     start_container(&instance_name);
 
     // TODO: wait till instance is fully initialize (we should use msmc lib for this)
