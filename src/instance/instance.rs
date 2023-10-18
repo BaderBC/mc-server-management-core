@@ -116,16 +116,30 @@ impl Instances {
         Ok(Self { names })
     }
 
-    pub fn get_instance(self, name: &str) -> anyhow::Result<Instance> {
+    pub fn get_instance(&self, name: &str) -> anyhow::Result<Instance> {
         if !self.names.contains(&name.to_string()) {
             return Err(
                 anyhow::Error::msg("Instance does not exist")
             );
         }
-        
+
         Ok(Instance {
             container: Container::get(name)?,
             name: name.to_string(),
         })
+    }
+
+    pub fn get_all_instances(self) -> anyhow::Result<Vec<InstanceDetails>> {
+        let mut all_instances = vec![];
+
+        // TODO: it look really inefficient - optimize it
+        for name in self.names.iter() {
+            all_instances.push(
+                self.get_instance(name)?
+                    .get_details()
+            )
+        }
+
+        Ok(all_instances)
     }
 }
