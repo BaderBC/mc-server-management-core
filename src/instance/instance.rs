@@ -45,7 +45,7 @@ impl InstanceBuilder {
             .name(&self.name)
             .port_mapping(self.port, MC_DEFAULT_PORT)
             .mount(host_path, Path::new(MC_DATA_CONTAINER_DIR))
-            .create();
+            .create()?;
 
         Instance::get(&self.name)
     }
