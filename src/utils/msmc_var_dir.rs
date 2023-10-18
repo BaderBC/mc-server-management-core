@@ -22,7 +22,7 @@ pub fn init() {
     }
 }
 
-pub fn init_and_get_instance_dir() -> PathBuf {
+pub fn init_and_get_instances_dir() -> PathBuf {
     init();
     INSTANCES_PATH.to_path_buf()
 }

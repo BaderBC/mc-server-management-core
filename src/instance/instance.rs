@@ -1,9 +1,11 @@
 use std::fmt::{Display, Formatter};
+use std::fs;
 use std::path::Path;
 use serde::{Deserialize, Serialize};
 use crate::instance::instance_config::Engine;
 use crate::utils::docker::{ContainerBuilder, Container};
 use crate::utils::msmc_var_dir;
+use crate::utils::msmc_var_dir::init_and_get_instances_dir;
 
 const IMAGE: &str = "itzg/minecraft-server";
 const MC_DEFAULT_PORT: u16 = 25565;
@@ -34,8 +36,8 @@ impl InstanceBuilder {
         let seed = format!("SEED={}", self.seed.unwrap_or(String::new()));
         let modpack_url = format!("MODPACK={}", self.modpack_zip_url.unwrap_or(String::new()));
 
-        let mut host_path = msmc_var_dir::init_and_get_instance_dir();
-        host_path.push(&self.name);
+        let mut instances_path = init_and_get_instances_dir();
+        instances_path.push(&self.name);
 
         ContainerBuilder::new(IMAGE)
             .env("EULA=TRUE")
@@ -44,8 +46,10 @@ impl InstanceBuilder {
             .env(&modpack_url)
             .name(&self.name)
             .port_mapping(self.port, MC_DEFAULT_PORT)
-            .mount(host_path, Path::new(MC_DATA_CONTAINER_DIR))
+            .mount(&instances_path, Path::new(MC_DATA_CONTAINER_DIR))
             .create()?;
+
+        fs::create_dir_all(instances_path)?;
 
         Instance::get(&self.name)
     }
@@ -57,22 +61,19 @@ pub struct Instance {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct InstanceInfo {
+pub struct InstanceDetails {
     name: String,
     // TODO: more fields
 }
 
 impl Instance {
     pub fn get(name: &str) -> anyhow::Result<Self> {
-        Ok(Self {
-            container: Container::get(name)?,
-            name: name.to_string(),
-        })
+        Instances::get()?.get_instance(name)
     }
 
-    pub fn get_info(self) -> InstanceInfo {
+    pub fn get_details(self) -> InstanceDetails {
         // TODO: return way more information about instance
-        InstanceInfo {
+        InstanceDetails {
             name: self.name
         }
     }
@@ -88,5 +89,43 @@ impl Instance {
 
     pub fn stop(self) {
         self.container.stop();
+    }
+}
+
+pub struct Instances {
+    names: Vec<String>,
+}
+
+impl Instances {
+    pub fn get() -> anyhow::Result<Self> {
+        let mut names = vec![];
+
+        let instances_path = init_and_get_instances_dir();
+        let instances = instances_path.read_dir()?;
+
+        for instance in instances {
+            if let Ok(instance) = instance {
+                let name = instance.file_name().into_string();
+
+                if let Ok(name) = name {
+                    names.push(name);
+                }
+            }
+        }
+
+        Ok(Self { names })
+    }
+
+    pub fn get_instance(self, name: &str) -> anyhow::Result<Instance> {
+        if !self.names.contains(&name.to_string()) {
+            return Err(
+                anyhow::Error::msg("Instance does not exist")
+            );
+        }
+        
+        Ok(Instance {
+            container: Container::get(name)?,
+            name: name.to_string(),
+        })
     }
 }
