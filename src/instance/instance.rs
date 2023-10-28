@@ -37,7 +37,7 @@ impl InstanceBuilder {
 
         let mut instance_path = MsmcDirs::get_instance(&self.name);
         instance_path.ensure_exists();
-        
+
         ContainerBuilder::new(IMAGE)
             .env("EULA=TRUE")
             .env(&format!("VERSION={}", self.game_version))
@@ -61,6 +61,7 @@ pub struct Instance {
 #[derive(Serialize, Deserialize)]
 pub struct InstanceDetails {
     pub name: String,
+    pub is_online: bool,
     // TODO: more fields
 }
 
@@ -69,11 +70,10 @@ impl Instance {
         Instances::get()?.get_instance(name)
     }
 
-    // It returns Result<T> because in the future it will access e.g. fs
     pub fn get_details(&self) -> anyhow::Result<InstanceDetails> {
-        // TODO: return way more information about instance
         Ok(InstanceDetails {
-            name: self.name.to_string()
+            name: self.name.to_string(),
+            is_online: self.container.is_running()?,
         })
     }
 
@@ -118,10 +118,10 @@ impl Instances {
         }
         let mut self_ = Self { names };
         self_.optimize_msmc_dir()?;
-        
+
         Ok(self_)
     }
-    
+
     fn optimize_msmc_dir(&mut self) -> anyhow::Result<()> {
         let mut optimized_names = vec![];
         for name in &self.names {
@@ -132,7 +132,7 @@ impl Instances {
                 instance_dir.delete();
             };
         }
-        
+
         self.names = optimized_names;
         Ok(())
     }
