@@ -1,8 +1,8 @@
-mod create_delete_instance;
 
-use create_delete_instance::{create_instance, start_container, stop_container, delete_container};
+use uuid::Uuid;
 
 use mc_server_management_core as msmc;
+use mc_server_management_core::instance::InstanceBuilder;
 use msmc::instance::instance_config::players_config::{
     Whitelist,
     WhitelistConfig,
@@ -11,27 +11,32 @@ use msmc::instance::instance_config::players_config::{
 
 #[test]
 fn remove_non_existing_player() -> anyhow::Result<()> {
-    let instance_name = create_instance()?;
-    start_container(&instance_name);
+    let instance_name = Uuid::new_v4().to_string();
+    let instance = InstanceBuilder::new(instance_name.clone())
+        .create()?;
 
-    // TODO: wait till instance is fully initialize (we should use msmc lib for this)
+    instance.start()?;
+
+    // TODO: wait till common is fully initialize (we should use msmc lib for this)
     let whitelist = Whitelist::read(&instance_name);
     assert_eq!(whitelist.config.len(), 0);
     // Shouldn't panic when player isn't on the list
     whitelist.remove_player("random_stuff".to_string());
 
-    stop_container(&instance_name);
-    delete_container(&instance_name);
+    instance.stop()?;
+    instance.delete()?;
     Ok(())
 }
 
 //#[test]
 #[allow(dead_code)]
 fn read_add_remove_whitelist_on_started_container() -> anyhow::Result<()> {
-    let instance_name = create_instance()?;
-    start_container(&instance_name);
-
-    // TODO: wait till instance is fully initialize (we should use msmc lib for this)
+    let instance_name = Uuid::new_v4().to_string();
+    let instance = InstanceBuilder::new(instance_name.clone())
+        .create()?;
+    
+    instance.start()?;
+    // TODO: wait till common is fully initialize (we should use msmc lib for this)
     let whitelist = Whitelist::read(&instance_name);
     assert_eq!(whitelist.config.len(), 0);
 
@@ -46,8 +51,7 @@ fn read_add_remove_whitelist_on_started_container() -> anyhow::Result<()> {
     let whitelist = Whitelist::read(&instance_name);
     assert_eq!(whitelist.config.len(), 0);
 
-    stop_container(&instance_name);
-    delete_container(&instance_name);
+    instance.stop()?;
     unimplemented!() //Makes sure that this function fails
 }
 

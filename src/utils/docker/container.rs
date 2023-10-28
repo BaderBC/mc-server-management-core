@@ -3,6 +3,7 @@ use anyhow::anyhow;
 use serde::de::Unexpected::Str;
 use serde_json::Value;
 
+#[derive(Clone)]
 pub struct Container {
     id: String,
 }

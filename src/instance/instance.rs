@@ -55,14 +55,15 @@ impl InstanceBuilder {
     }
 }
 
+#[derive(Clone)]
 pub struct Instance {
     container: Container,
-    name: String,
+    pub name: String,
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct InstanceDetails {
-    name: String,
+    pub name: String,
     // TODO: more fields
 }
 
@@ -71,29 +72,36 @@ impl Instance {
         Instances::get()?.get_instance(name)
     }
 
-    pub fn get_details(self) -> InstanceDetails {
+    // It returns Result<T> because in the future it will access e.g. fs
+    pub fn get_details(&self) -> anyhow::Result<InstanceDetails> {
         // TODO: return way more information about instance
-        InstanceDetails {
-            name: self.name
-        }
+        Ok(InstanceDetails {
+            name: self.name.to_string()
+        })
     }
 
-    pub fn delete(self) {
-        self.container.remove();
-        // TODO: delete data_dir after deleting container
+    pub fn delete(&self) -> anyhow::Result<()> {
+        self.container.remove()?;
+        let mut instance_dir = msmc_var_dir::INSTANCES_PATH.clone();
+        instance_dir.push(&self.name);
+        fs::remove_dir_all(instance_dir)?;
+        
+        Ok(())
     }
 
-    pub fn run(self) {
-        self.container.start();
+    pub fn start(&self) -> anyhow::Result<()> {
+        self.container.start()?;
+        Ok(())
     }
 
-    pub fn stop(self) {
-        self.container.stop();
+    pub fn stop(&self) -> anyhow::Result<()> {
+        self.container.stop()?;
+        Ok(())
     }
 }
 
 pub struct Instances {
-    names: Vec<String>,
+    pub names: Vec<String>,
 }
 
 impl Instances {
@@ -112,8 +120,27 @@ impl Instances {
                 }
             }
         }
-
-        Ok(Self { names })
+        let mut self_ = Self { names };
+        self_.optimize_msmc_dir()?;
+        
+        Ok(self_)
+    }
+    
+    fn optimize_msmc_dir(&mut self) -> anyhow::Result<()> {
+        let mut optimized_names = vec![];
+        for name in &self.names {
+            if let Ok(_) = Container::get(name) {
+                optimized_names.push(name.to_owned());
+            } else {
+                let mut instance_dir = msmc_var_dir::INSTANCES_PATH.clone();
+                instance_dir.push(name);
+                
+                fs::remove_dir_all(instance_dir)?;
+            };
+        }
+        
+        self.names = optimized_names;
+        Ok(())
     }
 
     pub fn get_instance(&self, name: &str) -> anyhow::Result<Instance> {
@@ -129,14 +156,15 @@ impl Instances {
         })
     }
 
-    pub fn get_all_instances(self) -> anyhow::Result<Vec<InstanceDetails>> {
+    pub fn get_instances_details(self) -> anyhow::Result<Vec<InstanceDetails>> {
         let mut all_instances = vec![];
 
         // TODO: it look really inefficient - optimize it
         for name in self.names.iter() {
+            println!("test----------------------: {}", name);
             all_instances.push(
                 self.get_instance(name)?
-                    .get_details()
+                    .get_details()?
             )
         }
 
