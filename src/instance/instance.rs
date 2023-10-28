@@ -4,8 +4,7 @@ use std::path::Path;
 use serde::{Deserialize, Serialize};
 use crate::instance::instance_config::Engine;
 use crate::utils::docker::{ContainerBuilder, Container};
-use crate::utils::msmc_var_dir;
-use crate::utils::msmc_var_dir::init_and_get_instances_dir;
+use crate::utils::MsmcDirs;
 
 const IMAGE: &str = "itzg/minecraft-server";
 const MC_DEFAULT_PORT: u16 = 25565;
@@ -36,9 +35,9 @@ impl InstanceBuilder {
         let seed = format!("SEED={}", self.seed.unwrap_or(String::new()));
         let modpack_url = format!("MODPACK={}", self.modpack_zip_url.unwrap_or(String::new()));
 
-        let mut instances_path = init_and_get_instances_dir();
-        instances_path.push(&self.name);
-
+        let mut instance_path = MsmcDirs::get_instance(&self.name);
+        instance_path.ensure_exists();
+        
         ContainerBuilder::new(IMAGE)
             .env("EULA=TRUE")
             .env(&format!("VERSION={}", self.game_version))
@@ -46,10 +45,8 @@ impl InstanceBuilder {
             .env(&modpack_url)
             .name(&self.name)
             .port_mapping(self.port, MC_DEFAULT_PORT)
-            .mount(&instances_path, Path::new(MC_DATA_CONTAINER_DIR))
+            .mount(instance_path.path, Path::new(MC_DATA_CONTAINER_DIR))
             .create()?;
-
-        fs::create_dir_all(instances_path)?;
 
         Instance::get(&self.name)
     }
@@ -82,9 +79,8 @@ impl Instance {
 
     pub fn delete(&self) -> anyhow::Result<()> {
         self.container.remove()?;
-        let mut instance_dir = msmc_var_dir::INSTANCES_PATH.clone();
-        instance_dir.push(&self.name);
-        fs::remove_dir_all(instance_dir)?;
+        let mut instance_dir = MsmcDirs::get_instance(&self.name);
+        instance_dir.delete();
         
         Ok(())
     }
@@ -108,8 +104,8 @@ impl Instances {
     pub fn get() -> anyhow::Result<Self> {
         let mut names = vec![];
 
-        let instances_path = init_and_get_instances_dir();
-        let instances = instances_path.read_dir()?;
+        let instances_dir = MsmcDirs::get_instances();
+        let instances = instances_dir.path.read_dir()?;
 
         for instance in instances {
             if let Ok(instance) = instance {
@@ -132,10 +128,8 @@ impl Instances {
             if let Ok(_) = Container::get(name) {
                 optimized_names.push(name.to_owned());
             } else {
-                let mut instance_dir = msmc_var_dir::INSTANCES_PATH.clone();
-                instance_dir.push(name);
-                
-                fs::remove_dir_all(instance_dir)?;
+                let mut instance_dir = MsmcDirs::get_instance(name);
+                instance_dir.delete();
             };
         }
         

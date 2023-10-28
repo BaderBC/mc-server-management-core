@@ -1,8 +1,8 @@
 use std::collections::HashMap;
+use std::env;
 use std::path::{Path};
 use std::process::Command;
 use crate::utils::docker::container::Container;
-use crate::utils::path_to_string;
 
 pub struct ContainerBuilder {
     name: Option<String>,
@@ -41,11 +41,11 @@ impl ContainerBuilder {
         self.mount_points.insert(host_path, container_path);
         self
     }
-    
+
     pub fn env(self, value: &str) -> Self {
         self.custom_option("-e", value)
     }
-    
+
     pub fn custom_option(mut self, option: &str, value: &str) -> Self {
         self.custom_options.insert(option.to_string(), value.to_string());
         self
@@ -67,17 +67,28 @@ impl ContainerBuilder {
         for (option, value) in self.custom_options.into_iter() {
             command.args([option, value]);
         }
-        
+
         command.arg(self.image);
 
 
         let command_output = command
             .output()?;
-        
+
         let cmd_output_utf8 = command_output.stdout;
         let container_id = std::str::from_utf8(&cmd_output_utf8)
             .map_err(|_| anyhow::Error::msg("Failed to read container id"))?;
-        
+
         Container::get(container_id.trim())
+    }
+}
+
+fn path_to_string<T>(path: T) -> String
+    where T: AsRef<Path> {
+    let path = path.as_ref();
+
+    if path.is_absolute() {
+        path.to_path_buf().to_str().unwrap().to_string()
+    } else {
+        env::current_dir().unwrap().join(path).to_str().unwrap().to_string()
     }
 }

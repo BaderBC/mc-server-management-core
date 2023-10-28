@@ -2,7 +2,7 @@ use std::fmt::Error;
 use std::fs::File;
 use std::io::{Read, Write};
 use serde::{Serialize, Deserialize};
-use crate::utils::msmc_var_dir::init_and_get_instances_dir;
+use crate::utils::MsmcDirs;
 
 
 macro_rules! unwrap_or_return_default {
@@ -210,7 +210,10 @@ impl<'a> BannedIps<'a> {
 }
 
 fn get_file(container_name: &str, file_name: &str) -> Option<File> {
-    let mut file_path = init_and_get_instances_dir();
+    let instance_dir = MsmcDirs::get_instance(container_name);
+    instance_dir.ensure_exists();
+    
+    let mut file_path = instance_dir.path;
     file_path.push(container_name);
     file_path.push(file_name);
 
