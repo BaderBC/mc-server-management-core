@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::env;
+use std::fmt::Debug;
 use std::path::{Path};
 use std::process::Command;
 use crate::utils::docker::container::Container;
@@ -9,7 +10,7 @@ pub struct ContainerBuilder {
     image: String,
     exposed_ports: HashMap<u16, u16>,
     mount_points: HashMap<String, String>,
-    custom_options: HashMap<String, String>,
+    custom_options: Vec<(String, String)>,
 }
 
 impl ContainerBuilder {
@@ -47,7 +48,7 @@ impl ContainerBuilder {
     }
 
     pub fn custom_option(mut self, option: &str, value: &str) -> Self {
-        self.custom_options.insert(option.to_string(), value.to_string());
+        self.custom_options.push((option.to_string(), value.to_string()));
         self
     }
 
@@ -69,8 +70,7 @@ impl ContainerBuilder {
         }
 
         command.arg(self.image);
-
-
+        
         let command_output = command
             .output()?;
 

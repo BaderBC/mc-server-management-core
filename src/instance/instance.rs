@@ -155,7 +155,6 @@ impl Instances {
 
         // TODO: it look really inefficient - optimize it
         for name in self.names.iter() {
-            println!("test----------------------: {}", name);
             all_instances.push(
                 self.get_instance(name)?
                     .get_details()?
